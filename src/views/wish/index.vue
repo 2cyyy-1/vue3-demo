@@ -117,13 +117,15 @@ export default {
     const router = useRouter();
     const { proxy } = getCurrentInstance();
 
+    const storeData = JSON.parse(JSON.stringify(store.state))
+
     let data = reactive({
-      tabIndex: store.state.type,
+      tabIndex: storeData.type,
       show: true,
       dataList: null,
       regDialog: false,
-      realRegulation: store.state.reg.regulation,
-      regCount: store.state.reg.count,
+      realRegulation: storeData.reg.regulation,
+      regCount: storeData.reg.count,
     });
 
     const toPath = (url, query) => {
@@ -179,8 +181,8 @@ export default {
     };
     // 重新获取store中的值，用于页面动态刷新
     const regetStore = () => {
-      data.realRegulation = store.state.reg.regulation;
-      data.regCount = store.state.reg.count;
+      data.realRegulation = JSON.parse(JSON.stringify(store.state)).reg.regulation;
+      data.regCount = JSON.parse(JSON.stringify(store.state)).reg.count;
     };
     // 清除抽卡数据
     const clear = () => {

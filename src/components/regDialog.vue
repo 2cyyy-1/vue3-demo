@@ -119,9 +119,12 @@ export default {
     },
   },
   setup(props, context) {
+
+    let storeData = JSON.parse(JSON.stringify(store.state))
+    
     let data = reactive({
-      realRegulation: store.state.reg.regulation,
-      regCount: store.state.reg.count,
+      realRegulation: storeData.reg.regulation,
+      regCount: storeData.reg.count,
       regulation: 0,
       armsName: pool.armsPool.star5.up[0],
     });
@@ -137,14 +140,15 @@ export default {
     // 定轨
     const orbit = () => {
       store.commit("setRegulation", data.regulation);
-      data.realRegulation = store.state.reg.regulation; // 更新当前页面状态
+      data.realRegulation = JSON.parse(JSON.stringify(store.state)).reg.regulation; // 更新当前页面状态
       context.emit("orbit"); // 通知祈愿页面更新数据
     };
     // 取消定轨
     const cancelOrbit = () => {
       store.commit("setRegulation", false);
       store.commit("setRegCount", 0);
-      data.realRegulation = store.state.reg.regulation; // 更新当前页面状态
+      data.realRegulation = JSON.parse(JSON.stringify(store.state)).reg.regulation; // 更新当前页面状态
+      data.regCount = JSON.parse(JSON.stringify(store.state)).reg.count; // 更新当前页面状态
       context.emit("cancelOrbit"); // 通知祈愿页面更新数据
     };
     return {
