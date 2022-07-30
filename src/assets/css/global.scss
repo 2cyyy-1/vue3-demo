@@ -1,0 +1,125 @@
+// 设置全局样式
+* {
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
+// 重写element下拉框样式
+.el-scrollbar__view li {
+    height: 60px !important;
+    line-height: 60px !important;
+    font-size: 1.1rem !important;
+    font-family: "hk4e_zh-cn", "HYWH85W", Avenir, Helvetica, Arial, sans-serif;
+    span {
+        font-weight: normal;
+    }
+}
+// 重写element card样式
+.el-card {
+    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.08);
+}
+.el-card.is-always-shadow {
+    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.08);
+}
+.el-card.is-hover-shadow:hover, .el-card.is-hover-shadow:focus {
+    box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.24);
+}
+// 自适应字体大小 全局字体使用em
+// TODO 后续调整成js控制
+@media screen and (max-width: 1600px) {
+    #app {
+        font-size: 16px;
+    }
+}
+@media screen and (max-width: 1200px) {
+    #app {
+        font-size: 12px;
+    }
+}
+@media screen and (max-width: 800px) {
+    #app {
+        font-size: 8px;
+    }
+}
+@media screen and (max-width: 400px) {
+    #app {
+        font-size: 4px;
+    }
+}
+@media screen and (max-height: 900px) {
+    #app {
+        font-size: 16px;
+    }
+}
+@media screen and (max-height: 675px) {
+    #app {
+        font-size: 12px;
+    }
+}
+@media screen and (max-height: 450px) {
+    #app {
+        font-size: 8px;
+    }
+}
+@media screen and (max-height: 225px) {
+    #app {
+        font-size: 4px;
+    }
+}
+// 文字
+.text1 {
+    padding-right: 0.01em;
+    width: 0.69em;
+    overflow: hidden;
+    display: inline-flex;
+    direction: rtl;
+}
+.text2 {
+    width: 0.67em;
+    overflow: hidden;
+    display: inline-flex;
+}
+.font-hywh85w {
+    font-family: "HYWH85W", Avenir, Helvetica, Arial, sans-serif;
+}
+.orange {
+    color: #ecad50;
+}
+.comma {
+    padding-left: 0.06em;
+    padding-right: 0.35em;
+}
+.orange1 {
+    color: #f39000;
+}
+// // 滚动条整体部分，可以设置宽度啥的
+// ::-webkit-scrollbar {
+//     width: 5px;
+//     height: 1px;
+// }
+// // 滚动条两端的按钮
+// ::-webkit-scrollbar-button {
+// }
+// // 外层轨道
+// ::-webkit-scrollbar-track {
+//     width: 2px;
+//     box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+//     border-radius: 10px;
+//     background: #ededed;
+// }
+// // 内层滚动槽
+// ::-webkit-scrollbar-track-piece {
+// }
+// // 滚动的滑块
+// ::-webkit-scrollbar-thumb {
+//     border-radius: 10px;
+//     background: rgba(239, 239, 239, 0.7);
+//     border: 1px solid rgb(239, 239, 239);
+//     box-shadow: 0 0 3px #000;
+// }
+// // 边角
+// ::-webkit-scrollbar-corner {
+// }
+// // 定义右下角拖动块的样式
+// ::-webkit-resizer {
+// }
