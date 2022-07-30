@@ -10,13 +10,42 @@ export default {
     const { proxy } = getCurrentInstance();
     // 从本地仓储恢复数据
     let storeData = {
-      recentList: [],
+      type: 1, // 最近选择的卡池
+      recentList: [], // 最近抽卡的数据
       info: {
-        up: {},
-        arms: {},
-        permanent: {},
+        up: {
+          all: 0, // 抽卡总数
+          up4: true, // 上次四星: true.中, false.歪
+          up5: true, // 上次五星: true.中, false.歪
+          c4: 0, // 累计count4抽未抽出四星
+          c5: 0, // 累计count5抽未抽出五星
+          n4: 0, // 累计抽出四星数
+          n5: 0, // 累计抽出五星数
+          allList: [], // 抽卡总数据
+        },
+        arms: {
+          all: 0,
+          up4: true,
+          up5: true,
+          c4: 0,
+          c5: 0,
+          n4: 0,
+          n5: 0,
+          allList: [],
+        },
+        permanent: {
+          all: 0,
+          c4: 0,
+          c5: 0,
+          n4: 0,
+          n5: 0,
+          allList: [],
+        },
       },
-      reg: {},
+      reg: {
+        regulation: false, // 定规情况: false.未定规, 0.第一把武器，1.第二把武器
+        count: 0, //累计count次金不是定轨武器
+      },
     };
     if (localStorage.getItem("list")) {
       storeData["recentList"] = JSON.parse(localStorage.getItem("list"));
@@ -41,7 +70,7 @@ export default {
       // console.log("恢复reg");
     }
     // console.log(storeData);
-    store.replaceState(Object.assign({},  JSON.parse(JSON.stringify(store.state), storeData)));
+    store.replaceState(Object.assign({}, store.state, storeData));
     // 本地仓储溢出
     if (window.localStorage) {
       var aa =
