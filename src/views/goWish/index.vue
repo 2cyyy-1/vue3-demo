@@ -126,7 +126,8 @@ export default {
   //视频样式
   .wish-video {
     height: 100vh;
-    width: 100vw;
+    width: 100.8vw;
+    margin-left: -0.4vw;
     object-fit: fill;
   }
   //右下角覆盖物样式
@@ -137,10 +138,10 @@ export default {
     height: 3vh;
     line-height: 3.1vh;
     width: 13vw;
-    background-color: #c4c0b7;
-    border-radius: 5px 5px 0 0;
+    background-color: #8ba3c7;
+    border-radius: 5px 0 0 0;
     color: #ffffff;
-    font-size: 1em;
+    font-size: 0.9em;
     // 字体超出隐藏 分辨率适配
     overflow: hidden;
     text-overflow: clip;
