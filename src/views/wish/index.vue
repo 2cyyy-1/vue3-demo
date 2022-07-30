@@ -24,11 +24,9 @@
           @click="tabChange(4)"
         ></div>
         <!-- 清除按钮 -->
-        <transition name="statistics" appear>
-          <div class="statistics" @click="clear()">
-            清除全部数据
-          </div>
-        </transition>
+        <!-- <transition name="statistics" appear>
+          <div class="statistics" @click="clear()">清除全部数据</div>
+        </transition> -->
       </div>
     </transition>
     <!-- 卡池背景 -->
@@ -106,7 +104,7 @@
 </template>
 
 <script>
-import { reactive, toRefs } from "vue";
+import { reactive, toRefs, getCurrentInstance } from "vue";
 import { useRouter } from "vue-router";
 import { getItem } from "../../assets/method/wish.js";
 import store from "@/store";
@@ -117,6 +115,7 @@ export default {
   components: { RegDialog },
   setup() {
     const router = useRouter();
+    const { proxy } = getCurrentInstance();
 
     let data = reactive({
       tabIndex: store.state.type,
@@ -185,8 +184,26 @@ export default {
     };
     // 清除抽卡数据
     const clear = () => {
-      store.commit('setInitialization')
-    }
+      proxy
+        .$confirm("此操作将永久清除全部抽卡数据, 是否继续?", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        })
+        .then(() => {
+          store.commit("setInitialization");
+          proxy.$message({
+            type: "success",
+            message: "清除成功!",
+          });
+        })
+        .catch(() => {
+          // proxy.$message({
+          //   type: "info",
+          //   message: "已取消清除",
+          // });
+        });
+    };
     return {
       ...toRefs(data),
       tabChange,
@@ -332,11 +349,11 @@ export default {
       top: 0;
       height: 4vh;
       line-height: 4.1vh;
-      width: 11vw;
-      background-color: #c4c0b7;
+      width: 8vw;
+      background-color: #8ba3c7;
       border-radius: 0 0 0 5px;
       color: #ffffff;
-      font-size: 1em;
+      font-size: 0.9em;
       // 字体超出隐藏 分辨率适配
       overflow: hidden;
       text-overflow: clip;
