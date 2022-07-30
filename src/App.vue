@@ -4,8 +4,10 @@
 
 <script>
 import store from "@/store";
+import { getCurrentInstance } from "vue";
 export default {
   setup() {
+    const { proxy } = getCurrentInstance();
     // 从本地仓储恢复数据
     let storeData = {
       recentList: [],
@@ -39,7 +41,7 @@ export default {
       // console.log("恢复reg");
     }
     // console.log(storeData);
-    store.replaceState(Object.assign({}, store.state, storeData));
+    store.replaceState(Object.assign({},  JSON.parse(JSON.stringify(store.state), storeData)));
     // 本地仓储溢出
     if (window.localStorage) {
       var aa =
@@ -81,6 +83,15 @@ export default {
       console.log("页面即将刷新");
       sessionStorage.setItem("STORE", JSON.stringify(store.state));
     });
+    // proxy.$messageBox.alert(
+    //   "<h2>欢迎使用2cyyy原神抽卡模拟器！</h2><br/><p>本软件仅供学习交流，如作他用所承受的法律责任一概与作者无关</p>",
+    //   {
+    //     dangerouslyUseHTMLString: true,
+    //     showClose: false,
+    //     confirmButtonText: "我知道了",
+    //     closeOnClickModal: true
+    //   }
+    // );
   },
 };
 </script>
