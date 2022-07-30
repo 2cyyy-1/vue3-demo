@@ -8,7 +8,7 @@
     text-color="#f0f0f4"
     active-text-color="#ffffff"
   >
-    <el-menu-item index="/wish">✧ 祈愿</el-menu-item>
+    <el-menu-item index="/wish">✦ 返回祈愿</el-menu-item>
     <el-menu-item index="/analysis">✦ 祈愿分析</el-menu-item>
     <el-menu-item index="/detail">✦ 详情</el-menu-item>
     <el-menu-item index="/history">✦ 历史记录</el-menu-item>
