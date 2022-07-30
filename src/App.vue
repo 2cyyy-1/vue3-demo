@@ -112,15 +112,18 @@ export default {
       console.log("页面即将刷新");
       sessionStorage.setItem("STORE", JSON.stringify(store.state));
     });
-    // proxy.$messageBox.alert(
-    //   "<h2>欢迎使用2cyyy原神抽卡模拟器！</h2><br/><p>本软件仅供学习交流，如作他用所承受的法律责任一概与作者无关</p>",
-    //   {
-    //     dangerouslyUseHTMLString: true,
-    //     showClose: false,
-    //     confirmButtonText: "我知道了",
-    //     closeOnClickModal: true
-    //   }
-    // );
+    if (!sessionStorage.getItem("ALERT")) {
+      proxy.$messageBox.alert(
+        "<h2>欢迎使用2cyyy原神抽卡模拟器！</h2><br/><p>为了获得最佳体验，建议您进入全屏模式（F11）。</p><p>切换浏览器或清除浏览器缓存后，祈愿记录将无法保存。</p><div>如果在使用过程中遇到任何问题或存在疑问，请与作者联系，联系方式：571534009@qq.com。</div><br/><p><span style='color: red'>郑重提示：</span>本模拟器仅供学习交流，如作他用所承受的法律责任一概与作者无关。</p>",
+        {
+          dangerouslyUseHTMLString: true,
+          showClose: false,
+          confirmButtonText: "我知道了",
+          closeOnClickModal: true,
+        }
+      );
+      sessionStorage.setItem("ALERT", true);
+    }
   },
 };
 </script>
