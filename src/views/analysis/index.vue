@@ -183,72 +183,89 @@
         <div class="row-box">
           <el-row :gutter="20">
             <el-col :span="12">
-              <el-card v-loading="!loadTableData" class="card2" shadow="always">
-                <div class="text1-box">
-                  <div class="card-text1 title h24">祈愿情况统计</div>
-                  <div class="card-text1 title h24 lh0 tr">
-                    <el-radio-group
-                      v-model="screenItem2"
-                      @change="radioChange2"
-                      size="small"
-                    >
-                      <el-radio-button label="5">五星</el-radio-button>
-                      <el-radio-button label="4">四星</el-radio-button>
-                    </el-radio-group>
-                  </div>
-                </div>
-                <div class="shadow"></div>
-                <el-table
-                  :data="tableData"
-                  class="table"
-                  style="width: 100%"
-                  size="large"
+              <transition-group name="card-left">
+                <el-card
+                  v-if="screenItem1 === 'all'"
+                  v-loading="!loadTableData"
+                  class="card2"
+                  shadow="always"
                 >
-                  <el-table-column
-                    prop="pool"
-                    label="卡池"
-                    align="left"
-                    min-width="45"
-                  />
-                  <el-table-column
-                    prop="count"
-                    label="距离保底"
-                    align="center"
-                    min-width="76"
-                  />
-                  <el-table-column
-                    prop="current"
-                    label="最近获取"
-                    align="center"
-                    min-width="76"
-                    class-name="king"
-                  >
-                    <template #default="scope">
-                      <span
-                        :class="[
-                          {
-                            king:
-                              (loadTableData && screenItem2 === '5') ||
-                              (!loadTableData && screenItem2 === '4'),
-                          },
-                          {
-                            purple:
-                              (loadTableData && screenItem2 === '4') ||
-                              (!loadTableData && screenItem2 === '5'),
-                          },
-                        ]"
-                        >{{ scope.row.current }}</span
+                  <div class="text1-box">
+                    <div class="card-text1 title h24">祈愿情况统计</div>
+                    <div class="card-text1 title h24 lh0 tr">
+                      <el-radio-group
+                        v-model="screenItem2"
+                        @change="radioChange2"
+                        size="small"
                       >
-                    </template></el-table-column
+                        <el-radio-button label="5">五星</el-radio-button>
+                        <el-radio-button label="4">四星</el-radio-button>
+                      </el-radio-group>
+                    </div>
+                  </div>
+                  <div class="shadow"></div>
+                  <el-table
+                    :data="tableData"
+                    class="table"
+                    style="width: 100%"
+                    size="large"
                   >
-                  <el-table-column
-                    prop="time"
-                    label="获取时间"
-                    align="right"
-                    min-width="60"
-                  />
-                </el-table>
-              </el-card>
+                    <el-table-column
+                      prop="pool"
+                      label="卡池"
+                      align="left"
+                      min-width="45"
+                    />
+                    <el-table-column
+                      prop="count"
+                      label="距离保底"
+                      align="center"
+                      min-width="76"
+                    />
+                    <el-table-column
+                      prop="current"
+                      label="最近获取"
+                      align="center"
+                      min-width="76"
+                    >
+                      <template #default="scope">
+                        <span
+                          :class="[
+                            {
+                              king:
+                                (loadTableData && screenItem2 === '5') ||
+                                (!loadTableData && screenItem2 === '4'),
+                            },
+                            {
+                              purple:
+                                (loadTableData && screenItem2 === '4') ||
+                                (!loadTableData && screenItem2 === '5'),
+                            },
+                          ]"
+                          >{{ scope.row.current }}</span
+                        >
+                      </template></el-table-column
+                    >
+                    <el-table-column
+                      prop="time"
+                      label="获取时间"
+                      align="right"
+                      min-width="60"
+                    />
+                  </el-table>
+                </el-card>
+                <el-card
+                  v-else
+                  class="card2"
+                  style="position: relative"
+                  shadow="always"
+                >
+                  <div class="text1-box">
+                    <div class="card-text1 title h24">近期祈愿获取</div>
+                  </div>
+                  <div id="echartPoint" class="echartPoint"></div>
+                </el-card>
+              </transition-group>
             </el-col>
             <el-col :span="12">
               <el-card class="card2" shadow="always">
@@ -256,7 +273,7 @@
                   <div class="card-text1 title h24">祈愿情况分析</div>
                 </div>
                 <div v-if="hasData" style="position: relative">
-                  <div id="echart" class="echart"></div>
+                  <div id="echartPie" class="echartPie"></div>
                   <transition-group name="pieText" appear>
                     <div v-if="!pieText" class="pie-text">欧气</div>
                     <div v-else class="pie-text">{{ pieText }}</div>
@@ -275,12 +292,12 @@
 <script>
 import { reactive, toRefs, onMounted, onUnmounted, watch } from "vue";
 import { useRoute } from "vue-router";
-// import store from "@/store";
 import * as echarts from "echarts";
 import topBar from "@/components/topBar.vue";
 import countTo from "@/components/countTo/vue-countTo.vue";
 import { formatDate } from "@/assets/method/utils";
 import { useStore } from "vuex";
+import pool from "@/assets/library/poolData.js";
 
 export default {
   name: "AnalysisView",
@@ -288,6 +305,14 @@ export default {
   setup() {
     const route = useRoute();
     const store = useStore();
+
+    const storeData = JSON.parse(JSON.stringify(store.state));
+    let pointChart;
+    let pieChart;
+    let poolUp = [];
+    pool.upPool1 && poolUp.push(pool.upPool1.star5.up[0]);
+    pool.upPool2 && poolUp.push(pool.upPool2.star5.up[0]);
+    let poolArms = pool.armsPool.star5.up;
 
     let data = reactive({
       path: route.path,
@@ -328,11 +353,11 @@ export default {
         },
       ],
       screenItem2: "5",
-      pieChart: "",
-      pieText: "",
       hasData: true,
+      pieText: "",
       pieOption: {
         tooltip: {
+          show: true,
           trigger: "item",
         },
         legend: {
@@ -405,21 +430,101 @@ export default {
         ],
         color: ["#fac858", "#91cc75", "#5470c6"],
       },
+      pointOption: {
+        tooltip: {
+          trigger: "axis",
+          formatter: (params) => {
+            return (
+              params[0].data[2] +
+              "<br/>" +
+              params[0].marker +
+              params[0].data[1] +
+              "抽"
+            );
+          },
+        },
+        xAxis: {
+          type: "category",
+          axisTick: {
+            show: false,
+          },
+          axisLabel: {
+            show: false,
+          },
+          boundaryGap: true,
+          splitLine: {
+            show: false,
+          },
+        },
+        yAxis: {
+          axisTick: {
+            show: false,
+          },
+          splitLine: {
+            lineStyle: {
+              type: "dashed",
+            },
+          },
+        },
+        series: [
+          {
+            type: "line",
+            symbolSize: 8,
+            data: [],
+            label: {
+              show: true,
+              distance: 7,
+              fontSize: 13,
+              fontWeight: "normal",
+              color: "#515a68",
+              fontFamily: "hk4e_zh-cn",
+              formatter: (params) => {
+                if (data.screenItem1 === "up") {
+                  return (
+                    params.data[3] +
+                    (poolUp.includes(params.data[3]) ? "" : "(歪)")
+                  );
+                } else if (data.screenItem1 === "arms") {
+                  return (
+                    params.data[3] +
+                    (poolArms.includes(params.data[3]) ? "" : "(歪)")
+                  );
+                } else {
+                  return params.data[3];
+                }
+              },
+            },
+            itemStyle: {
+              color: "#fac858",
+            },
+            emphasis: {
+              scale: true,
+              label: {
+                fontSize: 15,
+              },
+              itemStyle: {
+                borderWidth: 6,
+              },
+            },
+          },
+        ],
+      },
     });
-
-    const storeData = JSON.parse(JSON.stringify(store.state));
 
     watch(
       // 监听数据变化重新渲染饼图
       () => data.dataObj.n5,
       (newValue, oldValue) => {
-        initEcharts();
+        initEchartsPie();
+        if (data.screenItem1 !== "all") {
+          initEchartsPoint();
+        }
       }
     );
 
     watch(
       // 饼图初始化时添加监听事件
-      () => data.pieChart,
+      () => pieChart,
       (newValue, oldValue) => {
         // 监听鼠标移动事件
         document.addEventListener("mousemove", mmFunc);
@@ -494,6 +599,29 @@ export default {
           return arr[i];
         }
       }
+    };
+    // 从祈愿列表检索最近抽取的5星列表
+    const getRecentData = (type) => {
+      const arr = storeData.info[type].allList;
+      let count = 0;
+      let count2 = 0;
+      let recentArr = [];
+      for (let i = arr.length - 1; i >= 0; i--) {
+        if (arr[i].star != 5) {
+          count++;
+        } else {
+          count++;
+          recentArr.push([
+            count2,
+            count,
+            formatDate(arr[i].time).slice(0, 10),
+            arr[i].name,
+          ]);
+          count = 0;
+          count2++;
+        }
+      }
+      return recentArr;
     };
     // 初始化首页表格数据
     const optionTableData = () => {
@@ -601,6 +729,13 @@ export default {
       data.pieOption.series[0].data[0].value = obj.n5;
       data.pieOption.series[0].data[1].value = obj.n4;
       data.pieOption.series[0].data[2].value = obj.n3;
+      if (data.screenItem1 !== "all") {
+        let recentArr = getRecentData(data.screenItem1);
+        if (recentArr.length > 10) {
+          recentArr = recentArr.slice(recentArr.length - 10, recentArr.length);
+        }
+        data.pointOption.series[0].data = recentArr;
+      }
       setTimeout(() => {
         // 需要延时渲染的数据在这里
         data.dataObj = obj;
@@ -631,23 +766,41 @@ export default {
       }, (Math.floor(Math.random() * 3) + 3) * 100);
     };
 
-    // 渲染echarts
-    const initEcharts = () => {
-      data.pieChart = echarts.init(document.getElementById("echart"));
+    // 渲染echarts饼图
+    const initEchartsPie = () => {
+      pieChart = echarts.init(document.getElementById("echartPie"));
       setTimeout(() => {
-        // data.pieChart.clear();
-        data.pieChart.setOption(data.pieOption);
+        // pieChart.clear();
+        pieChart.setOption(data.pieOption);
       }, 200);
       window.onresize = () => {
-        data.pieChart.resize();
+        pieChart.resize();
       };
     };
+
+    // 渲染echarts散点图
+    const initEchartsPoint = () => {
+      pointChart = echarts.init(document.getElementById("echartPoint"));
+      setTimeout(() => {
+        // pointChart.clear();
+        pointChart.setOption(data.pointOption);
+      }, 200);
+      window.onresize = () => {
+        pointChart.resize();
+      };
+    };
+
     // 当移动到echarts上时，重设光标样式
     let cursor = require("@/assets/image/cursor.png");
     const mmFunc = function () {
-      document.getElementsByClassName(
-        "echart"
-      )[0].childNodes[0].style.cursor = `url(${cursor}), auto`;
+      let pie = document.getElementById("echartPie");
+      let point = document.getElementById("echartPoint");
+      if (pie) {
+        pie.childNodes[0].style.cursor = `url(${cursor}), auto`;
+      }
+      if (point && point.childNodes[0]) {
+        point.childNodes[0].style.cursor = `url(${cursor}), auto`;
+      }
     };
 
     onMounted(() => {});
@@ -685,13 +838,13 @@ export default {
     color: rgba($color: #515a68, $alpha: 1) !important;
   }
   .king {
-    color: rgba($color: #ef8123, $alpha: 0.8) !important;
+    color: rgba($color: #f1b73a, $alpha: 1) !important;
   }
   .purple {
     color: rgba($color: #a256e1, $alpha: 0.8) !important;
   }
   .blue {
-    color: rgba($color: #00a8f3, $alpha: 0.8) !important;
+    color: rgba($color: #5470c6, $alpha: 1) !important;
   }
   .king-star {
     font-size: 1rem !important;
@@ -840,9 +993,16 @@ export default {
       color: #a0a4ad;
     }
   }
-  .echart {
+  .echartPie {
     width: 100%;
     height: 280px;
+  }
+  .echartPoint {
+    position: absolute;
+    top: 20px;
+    left: -20px;
+    width: calc(100% + 65px);
+    height: 338px;
   }
   .pieText-enter-from {
     opacity: 0;
@@ -854,6 +1014,18 @@ export default {
     transition: all 0.3s ease 0.7s;
   }
   .pieText-leave-to {
+    opacity: 0;
+  }
+  .card-left-enter-from {
+    opacity: 0;
+  }
+  .card-left-enter-active {
+    transition: all 0.3s ease-out;
+  }
+  .card-left-leave-active {
+    transition: all 0.3s ease;
+  }
+  .card-left-leave-to {
     opacity: 0;
   }
 }
