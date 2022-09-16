@@ -23,7 +23,7 @@
         border
         :data="tableData"
         class="table"
-        :max-height="tableHeight"
+        :height="tableHeight"
         size="large"
         :cell-class-name="cellClassName"
         :header-cell-class-name="headerCellClassName"
@@ -70,6 +70,9 @@
           class-name="table-item"
           :resizable="false"
         />
+        <template #empty
+          ><div :style="noTableDataStyle">暂无数据</div></template
+        >
       </el-table>
       <!-- 分页器 -->
       <el-pagination
@@ -120,10 +123,13 @@ export default {
         { value: 2, label: "角色活动祈愿与角色活动祈愿-2" },
         { value: 3, label: "武器活动祈愿" },
       ],
+      noTableDataStyle: { height: 0 + 'px', lineHeight: 0 + 'px' }
     });
     // 获取窗口高度
     const getHeight = () => {
       data.tableHeight = document.documentElement.clientHeight - 239;
+      data.noTableDataStyle.height = data.tableHeight - 70 + 'px'
+      data.noTableDataStyle.lineHeight = data.tableHeight - 70 + 'px'
     };
     // 数据处理
     const optionData = () => {
@@ -265,7 +271,8 @@ export default {
       width: 90%;
       :deep(.el-input__inner) {
         cursor: url("@/assets/image/cursor.png"), auto;
-        font-family: "hk4e_zh-cn", "HYWH85W", Avenir, Helvetica, Arial, sans-serif;
+        font-family: "hk4e_zh-cn", "HYWH85W", Avenir, Helvetica, Arial,
+          sans-serif;
         height: 60px;
       }
       :deep(.el-select__caret) {

@@ -27,15 +27,11 @@
             <div class="text2-box">
               <div class="title">写在前面</div>
               <br />
-              <div v-if="hasData" class="title">
+              <div v-if="staticData.beginTime" class="title">
                 自
-                <span style="color: #8ba3c7">{{
-                  dataObj.time && toCNtime(dataObj.time.slice(0, 10))
-                }}</span>
+                <span style="color: #8ba3c7">{{ staticData.beginTime }}</span>
                 起, 你已累计游玩
-                <span style="color: #8ba3c7">{{
-                  dataObj.time && toDays(dataObj.time.slice(0, 10)).toFixed(0)
-                }}</span>
+                <span style="color: #8ba3c7">{{ staticData.days }}</span>
                 天^ ^
               </div>
               <div class="title" style="margin-top: 5px">
@@ -263,7 +259,10 @@
                   <div class="text1-box">
                     <div class="card-text1 title h24">近期祈愿获取</div>
                   </div>
-                  <div id="echartPoint" class="echartPoint"></div>
+                  <div v-if="hasData">
+                    <div id="echartPoint" class="echartPoint"></div>
+                  </div>
+                  <div v-else class="pie-no-data">暂无祈愿数据 T^T</div>
                 </el-card>
               </transition-group>
             </el-col>
@@ -353,6 +352,10 @@ export default {
         },
       ],
       screenItem2: "5",
+      staticData: {
+        beginTime: "",
+        days: ""
+      },
       hasData: true,
       pieText: "",
       pieOption: {
@@ -513,11 +516,13 @@ export default {
 
     watch(
       // 监听数据变化重新渲染饼图
-      () => data.dataObj.n5,
+      () => data.dataObj,
       (newValue, oldValue) => {
-        initEchartsPie();
-        if (data.screenItem1 !== "all") {
-          initEchartsPoint();
+        if (data.dataObj.all !== 0) {
+          initEchartsPie();
+          if (data.screenItem1 !== "all") {
+            initEchartsPoint();
+          }
         }
       }
     );
@@ -534,23 +539,22 @@ export default {
     // 获取祈愿最早到最晚时间范围
     const getTime = (list) => {
       if (data.screenItem1 === "all") {
-        let list1 = storeData.info.up.allList;
-        let list2 = storeData.info.arms.allList;
-        let list3 = storeData.info.permanent.allList;
-        let arr1 = [list1[0].time, list2[0].time, list3[0].time];
-        let arr2 = [
-          list1[list1.length - 1].time,
-          list2[list2.length - 1].time,
-          list3[list3.length - 1].time,
-        ];
+        let listArr = [storeData.info.up.allList, storeData.info.arms.allList, storeData.info.permanent.allList]
+        let arr1 = [], arr2 = []
+        for (let i in listArr) {
+          if (listArr[i][0]) {
+            arr1.push(listArr[i][0].time)
+            arr2.push(listArr[i][listArr[i].length - 1].time)
+          }
+        }
         let startTime = arr1[0];
         let endTime = arr2[0];
-        for (let i = 0; i < 3; i++) {
-          if (arr1[i].time > startTime) {
-            startTime = arr1[i].time;
+        for (let j in arr1.length) {
+          if (arr1[j].time > startTime) {
+            startTime = arr1[j].time;
           }
-          if (arr2[i].time < startTime) {
-            endTime = arr2[i].time;
+          if (arr2[j].time < startTime) {
+            endTime = arr2[j].time;
           }
         }
         return (
@@ -587,8 +591,8 @@ export default {
         startTime === endTime
           ? 1
           : startTime > endTime
-          ? 0
-          : (endTime - startTime) / (1 * 24 * 60 * 60 * 1000);
+            ? 0
+            : (endTime - startTime) / (1 * 24 * 60 * 60 * 1000);
       return days;
     };
     // 从祈愿列表检索最近抽取的5星/4星
@@ -630,63 +634,97 @@ export default {
       let permanentObj = getCurrentData("permanent");
       data.tableData[0] = upObj
         ? {
-            pool: "活动",
-            current: upObj.name,
-            count:
-              (data.screenItem2 === "5" ? 90 : 10) -
-              storeData.info.up["c" + data.screenItem2] +
-              "抽",
-            time: formatDate(upObj.time).slice(0, 10),
-          }
+          pool: "活动",
+          current: upObj.name,
+          count:
+            (data.screenItem2 === "5" ? 90 : 10) -
+            storeData.info.up["c" + data.screenItem2] +
+            "抽",
+          time: formatDate(upObj.time).slice(0, 10),
+        }
         : {
-            pool: "活动",
-            current: "-",
-            count: "-",
-            time: "-",
-          };
+          pool: "活动",
+          current: "-",
+          count: "-",
+          time: "-",
+        };
       data.tableData[1] = armsObj
         ? {
-            pool: "武器",
-            current: armsObj.name,
-            count:
-              (data.screenItem2 === "5" ? 80 : 10) -
-              storeData.info.arms["c" + data.screenItem2] +
-              "抽",
-            time: formatDate(armsObj.time).slice(0, 10),
-          }
+          pool: "武器",
+          current: armsObj.name,
+          count:
+            (data.screenItem2 === "5" ? 80 : 10) -
+            storeData.info.arms["c" + data.screenItem2] +
+            "抽",
+          time: formatDate(armsObj.time).slice(0, 10),
+        }
         : {
-            pool: "武器",
-            current: "-",
-            count: "-",
-            time: "-",
-          };
+          pool: "武器",
+          current: "-",
+          count: "-",
+          time: "-",
+        };
       data.tableData[2] = permanentObj
         ? {
-            pool: "常驻",
-            current: permanentObj.name,
-            count:
-              (data.screenItem2 === "5" ? 90 : 10) -
-              storeData.info.permanent["c" + data.screenItem2] +
-              "抽",
-            time: formatDate(permanentObj.time).slice(0, 10),
-          }
+          pool: "常驻",
+          current: permanentObj.name,
+          count:
+            (data.screenItem2 === "5" ? 90 : 10) -
+            storeData.info.permanent["c" + data.screenItem2] +
+            "抽",
+          time: formatDate(permanentObj.time).slice(0, 10),
+        }
         : {
-            pool: "常驻",
-            current: "-",
-            count: "-",
-            time: "-",
-          };
+          pool: "常驻",
+          current: "-",
+          count: "-",
+          time: "-",
+        };
     };
     // 初始化数据
     const optionData = () => {
       data.loadData = false;
       data.pieText = "";
-      let obj = JSON.parse(JSON.stringify(data.dataObj));
+      let obj;
+      const optionObj = (obj) => {
+        obj["n3"] = obj.all - obj.n5 - obj.n4;
+        obj["a5"] = obj.n5 ? obj.all / obj.n5 : 0;
+        obj["a4"] = obj.n4 ? obj.all / obj.n4 : 0;
+        obj["a3"] =
+          obj.all != obj.n4 + obj.n5 ? obj.all / (obj.all - obj.n4 - obj.n5) : 0;
+        obj["p5"] = obj.all ? (obj.n5 * 100) / obj.all : 0;
+        obj["p4"] = obj.all ? (obj.n4 * 100) / obj.all : 0;
+        obj["p3"] = obj.all ? 100 - obj.p5.toFixed(2) - obj.p4.toFixed(2) : 0;
+        // 需要即时渲染的数据在这里
+        data.hasData = !!obj.all;
+        data.pieOption.series[0].data[0].value = obj.n5;
+        data.pieOption.series[0].data[1].value = obj.n4;
+        data.pieOption.series[0].data[2].value = obj.n3;
+        if (data.screenItem1 !== "all") {
+          let recentArr = getRecentData(data.screenItem1);
+          if (recentArr.length > 10) {
+            recentArr = recentArr.slice(recentArr.length - 10, recentArr.length);
+          }
+          data.pointOption.series[0].data = recentArr;
+        }
+        setTimeout(() => {
+          // 需要延时渲染的数据在这里
+          data.dataObj = obj;
+          data.pieText = !obj.n5
+            ? ""
+            : obj.a5 < 60
+              ? "欧皇"
+              : obj.a5 < 75
+                ? "平平"
+                : "非酋";
+          data.loadData = true;
+        }, (Math.floor(Math.random() * 3) + 3) * 100);
+      }
       if (data.screenItem1 === "all") {
         if (
           storeData.info.up.all +
-            storeData.info.arms.all +
-            storeData.info.permanent.all !=
+          storeData.info.arms.all +
+          storeData.info.permanent.all !=
           0
         ) {
           obj = {
@@ -704,7 +742,10 @@ export default {
               storeData.info.arms.n4 +
               storeData.info.permanent.n4,
           };
+          optionObj(obj)
           optionTableData();
+          data.staticData.beginTime = toCNtime(obj.time.slice(0, 10))
+          data.staticData.days = toDays(obj.time.slice(0, 10)).toFixed(0)
         }
       } else {
         if (storeData.info[data.screenItem1].all != 0) {
@@ -714,40 +755,29 @@ export default {
             n5: storeData.info[data.screenItem1].n5,
             n4: storeData.info[data.screenItem1].n4,
           };
+          optionObj(obj)
+        } else {
+          setTimeout(() => {
+            data.hasData = false;
+            data.dataObj = {
+              time: "",
+              all: 0,
+              n5: 0,
+              n4: 0,
+              n3: 0,
+              a5: 0,
+              a4: 0,
+              a3: 0,
+              p5: 0,
+              p4: 0,
+              p3: 0,
+            };
+            data.pieText = "";
+            data.loadData = true;
+          }, (Math.floor(Math.random() * 3) + 3) * 100);
         }
       }
-      obj["n3"] = obj.all - obj.n5 - obj.n4;
-      obj["a5"] = obj.n5 ? obj.all / obj.n5 : 0;
-      obj["a4"] = obj.n4 ? obj.all / obj.n4 : 0;
-      obj["a3"] =
-        obj.all != obj.n4 + obj.n5 ? obj.all / (obj.all - obj.n4 - obj.n5) : 0;
-      obj["p5"] = obj.all ? (obj.n5 * 100) / obj.all : 0;
-      obj["p4"] = obj.all ? (obj.n4 * 100) / obj.all : 0;
-      obj["p3"] = obj.all ? 100 - obj.p5.toFixed(2) - obj.p4.toFixed(2) : 0;
-      // 需要即时渲染的数据在这里
-      data.hasData = !!obj.all;
-      data.pieOption.series[0].data[0].value = obj.n5;
-      data.pieOption.series[0].data[1].value = obj.n4;
-      data.pieOption.series[0].data[2].value = obj.n3;
-      if (data.screenItem1 !== "all") {
-        let recentArr = getRecentData(data.screenItem1);
-        if (recentArr.length > 10) {
-          recentArr = recentArr.slice(recentArr.length - 10, recentArr.length);
-        }
-        data.pointOption.series[0].data = recentArr;
-      }
-      setTimeout(() => {
-        // 需要延时渲染的数据在这里
-        data.dataObj = obj;
-        data.pieText = !obj.n5
-          ? ""
-          : obj.a5 < 60
-          ? "欧皇"
-          : obj.a5 < 75
-          ? "平平"
-          : "非酋";
-        data.loadData = true;
-      }, (Math.floor(Math.random() * 3) + 3) * 100);
+
     };
 
     // 主页单选框切换事件
@@ -768,6 +798,7 @@ export default {
 
     // 渲染echarts饼图
     const initEchartsPie = () => {
+      console.log("initPie")
       pieChart = echarts.init(document.getElementById("echartPie"));
       setTimeout(() => {
         // pieChart.clear();
@@ -780,6 +811,7 @@ export default {
 
     // 渲染echarts散点图
     const initEchartsPoint = () => {
+      console.log("initPoint")
       pointChart = echarts.init(document.getElementById("echartPoint"));
       setTimeout(() => {
         // pointChart.clear();
@@ -803,7 +835,7 @@ export default {
       }
     };
 
-    onMounted(() => {});
+    onMounted(() => { });
 
     onUnmounted(() => {
       // 卸载时移除监听鼠标移动事件
